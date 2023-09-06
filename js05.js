@@ -38,4 +38,4 @@ fnc1();
 fnc2(20,12);
 console.log("결과3 : "+fnc3());     // var data3 =fnc3();
 console.log("결과4:"+fnc4(13,12));  //var data4 =fnc4(13,12);
-console.log("결과5:"+fnc5);   
+console.log("결과5:"+fnc5); 
