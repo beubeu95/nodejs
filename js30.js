@@ -1,6 +1,8 @@
 const dbCon = require("./model/sample.js");
 const express = require("express");
 const app = express();
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({extended : false}));
 let title = "";
 let tmp1 = `<!DOCTYPE html>
 <html lang="en">
@@ -17,6 +19,24 @@ let tmp1 = `<!DOCTYPE html>
     <hr>
 `;
 let tmp2 = `</body>
+</html>`;
+
+let tmp3 = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Sample</title>
+</head>
+<body>
+    <ul>
+        <li><a href="/list">목록</a></li>
+        <li><a href="/addSample">샘플 추가</a></li>
+    </ul>
+    <form action="/editSamplePro" method="post">`;
+let tmp4 = `<p><input type="submit"></p>
+        </form>
+    </body>
 </html>`;
 app.get('/', (req, res) => {
     res.sendFile(__dirname + "/sampleMain.html");
@@ -46,7 +66,9 @@ app.get('/get/:no', (req, res) => {
         .then((row) => {
             const no = row[0].NO;
             const name = row[0].NAME;
-            body = `<p>no : ${no}, name : ${name }</p>`
+            body = `<p>no : ${no}, name : ${name }</p><br>
+            <p><a href="/editSample/${no}">수정</a><p><br>
+            <p><a href="/delSamplePro/${no}">삭제</a><p>`;
             res.send(tmp1+title+body+tmp2);
         })
         .catch((errMsg) => {
@@ -57,8 +79,47 @@ app.get('/addSample', (req, res) => {
     res.sendFile(__dirname + "/sampleForm.html");
 });
 app.post('/addSamplePro', (req, res) => {
-    let sample = {no:req.params.no, name:req.params.name};
+    let sample = {no:req.body.no, name:req.body.name};
     dbCon.addSample(sample)
+    .then((msg) => {
+        console.log(msg);
+    })
+    .catch((errMsg) => {
+        console.log(errMsg);
+    });
+    res.sendFile(__dirname+"/sampleMain.html");
+});
+
+app.get('/editSample/:no', (req, res) =>{
+    title = `<h2>샘플 수정하기</h2>`;
+    let body = "";
+    dbCon.GetSample(req.params.no)
+        .then((row) => {
+            const no = row[0].NO;
+            const name = row[0].NAME;
+            body =`<p><input type="hidden" name="no" value="${no }" placeholder="no hidden"></p>
+            <p><input type="text" name="name" value="${name }" placeholder="name input"></p>`;
+            res.send(tmp3+title+body+tmp4);
+        })
+        .catch((errMsg) => {
+            res.send(errMsg);
+        });
+});
+
+app.post('/editSamplePro', (req,res) => {
+    let sample = [req.body.name, req.body.no];
+    dbCon.editSample(sample)
+    .then((msg) =>{
+        console.log(msg);
+    })
+    .catch((errMsg) => {
+        console.log(errMsg);
+    });
+    res.sendFile(__dirname+"/sampleMAin.html");
+});
+
+app.get('/delSamplePro/:no', (req, res) => {
+    dbCon.delSample(req.params.no)
     .then((msg) => {
         console.log(msg);
     })
